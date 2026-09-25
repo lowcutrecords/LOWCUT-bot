@@ -36,6 +36,7 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
+
 # =========================================================
 # DISCORD CONFIG
 # =========================================================
@@ -59,7 +60,13 @@ ARTIST_DISCORD_IDS = {
     "zanx": 1434278973403299980,
     "dro": 693897321879961651,
     "dragho": 634540784309239833,
-    "fayre": 722873638906363915
+    "fayre": 722873638906363915,
+    "lack": 524030848098500608
+}
+
+
+ARTIST_FIREBASE_UIDS = {
+    "lack": "gJzEGst0OSWa3dfelS2y0ew9T822"
 }
 
 
@@ -134,12 +141,10 @@ async def monitor_contracts():
     )
 
     if channel is None:
-
         print(
             "ERROR: No se encontró "
             "el canal #contratos."
         )
-
         return
 
     print("Monitor de contratos iniciado.")
@@ -216,11 +221,9 @@ async def monitor_contracts():
                         contract_id
                     ] = status
 
-                    # Ya tiene mensaje en Discord
                     if discord_message_id:
                         continue
 
-                    # Contrato pendiente nuevo
                     if status == "pending":
 
                         embed = discord.Embed(
@@ -255,18 +258,16 @@ async def monitor_contracts():
                             text="LOWCUT// RECORDS"
                         )
 
-                        message = (
-                            await channel.send(
-                                content=(
-                                    f"<@"
-                                    f"{discord_user_id}"
-                                    f">"
-                                ),
-                                embed=embed,
-                                allowed_mentions=
-                                discord.AllowedMentions(
-                                    users=True
-                                )
+                        message = await channel.send(
+                            content=(
+                                f"<@"
+                                f"{discord_user_id}"
+                                f">"
+                            ),
+                            embed=embed,
+                            allowed_mentions=
+                            discord.AllowedMentions(
+                                users=True
                             )
                         )
 
@@ -335,12 +336,8 @@ async def monitor_contracts():
 
                         try:
 
-                            message = (
-                                await channel.fetch_message(
-                                    int(
-                                        discord_message_id
-                                    )
-                                )
+                            message = await channel.fetch_message(
+                                int(discord_message_id)
                             )
 
                             await message.edit(
@@ -363,30 +360,7 @@ async def monitor_contracts():
 
                         except discord.NotFound:
 
-                            message = (
-                                await channel.send(
-                                    content=(
-                                        f"<@"
-                                        f"{discord_user_id}"
-                                        f">"
-                                    ),
-                                    embed=embed,
-                                    allowed_mentions=
-                                    discord.AllowedMentions(
-                                        users=True
-                                    )
-                                )
-                            )
-
-                            doc.reference.update({
-                                "discordMessageId":
-                                    str(message.id)
-                            })
-
-                    else:
-
-                        message = (
-                            await channel.send(
+                            message = await channel.send(
                                 content=(
                                     f"<@"
                                     f"{discord_user_id}"
@@ -397,6 +371,25 @@ async def monitor_contracts():
                                 discord.AllowedMentions(
                                     users=True
                                 )
+                            )
+
+                            doc.reference.update({
+                                "discordMessageId":
+                                    str(message.id)
+                            })
+
+                    else:
+
+                        message = await channel.send(
+                            content=(
+                                f"<@"
+                                f"{discord_user_id}"
+                                f">"
+                            ),
+                            embed=embed,
+                            allowed_mentions=
+                            discord.AllowedMentions(
+                                users=True
                             )
                         )
 
@@ -443,12 +436,8 @@ async def monitor_contracts():
 
                         try:
 
-                            message = (
-                                await channel.fetch_message(
-                                    int(
-                                        discord_message_id
-                                    )
-                                )
+                            message = await channel.fetch_message(
+                                int(discord_message_id)
                             )
 
                             await message.edit(
@@ -466,15 +455,13 @@ async def monitor_contracts():
 
                         except discord.NotFound:
 
-                            message = (
-                                await channel.send(
-                                    content=(
-                                        f"<@"
-                                        f"{discord_user_id}"
-                                        f">"
-                                    ),
-                                    embed=embed
-                                )
+                            message = await channel.send(
+                                content=(
+                                    f"<@"
+                                    f"{discord_user_id}"
+                                    f">"
+                                ),
+                                embed=embed
                             )
 
                             doc.reference.update({
@@ -484,18 +471,16 @@ async def monitor_contracts():
 
                     else:
 
-                        message = (
-                            await channel.send(
-                                content=(
-                                    f"<@"
-                                    f"{discord_user_id}"
-                                    f">"
-                                ),
-                                embed=embed,
-                                allowed_mentions=
-                                discord.AllowedMentions(
-                                    users=True
-                                )
+                        message = await channel.send(
+                            content=(
+                                f"<@"
+                                f"{discord_user_id}"
+                                f">"
+                            ),
+                            embed=embed,
+                            allowed_mentions=
+                            discord.AllowedMentions(
+                                users=True
                             )
                         )
 
@@ -815,19 +800,17 @@ class TicketPanelView(
 
         try:
 
-            ticket_channel = (
-                await guild.create_text_channel(
-                    name=channel_name,
-                    category=category,
-                    overwrites=overwrites,
-                    topic=(
-                        f"ticket_owner:"
-                        f"{interaction.user.id}"
-                    ),
-                    reason=(
-                        "Ticket creado por "
-                        f"{interaction.user}"
-                    )
+            ticket_channel = await guild.create_text_channel(
+                name=channel_name,
+                category=category,
+                overwrites=overwrites,
+                topic=(
+                    f"ticket_owner:"
+                    f"{interaction.user.id}"
+                ),
+                reason=(
+                    "Ticket creado por "
+                    f"{interaction.user}"
                 )
             )
 
@@ -925,10 +908,7 @@ async def on_ready():
     global monitor_started
     global views_registered
 
-    # =========================================
-    # SOLO SERVER LOWCUT//
-    # =========================================
-
+    # Solo server LOWCUT//
     for guild in bot.guilds:
 
         if guild.id != GUILD_ID:
@@ -941,10 +921,7 @@ async def on_ready():
 
             await guild.leave()
 
-    # =========================================
-    # COMANDOS
-    # =========================================
-
+    # Comandos
     bot.tree.clear_commands(
         guild=None
     )
@@ -966,10 +943,7 @@ async def on_ready():
         f"{len(synced)}"
     )
 
-    # =========================================
-    # ESTADO
-    # =========================================
-
+    # Estado
     await bot.change_presence(
         status=discord.Status.online,
         activity=discord.Activity(
@@ -978,10 +952,7 @@ async def on_ready():
         )
     )
 
-    # =========================================
-    # BOTONES PERSISTENTES
-    # =========================================
-
+    # Botones persistentes
     if not views_registered:
 
         bot.add_view(
@@ -994,10 +965,7 @@ async def on_ready():
 
         views_registered = True
 
-    # =========================================
-    # MONITOR FIREBASE
-    # =========================================
-
+    # Monitor Firebase
     if not monitor_started:
 
         bot.loop.create_task(
@@ -1140,7 +1108,10 @@ async def artists(
 
             "**Zanx**\n"
             "Trap / Phonk / "
-            "Experimental producer"
+            "Experimental producer\n\n"
+
+            "**Lack**\n"
+            "Alternative Rock band"
         )
     )
 
@@ -1468,12 +1439,8 @@ async def notificarcontrato(
 
         try:
 
-            message = (
-                await channel.fetch_message(
-                    int(
-                        discord_message_id
-                    )
-                )
+            message = await channel.fetch_message(
+                int(discord_message_id)
             )
 
             await message.edit(
@@ -1876,10 +1843,8 @@ async def deletemensajes(
 
     try:
 
-        deleted = (
-            await interaction.channel.purge(
-                limit=cantidad
-            )
+        deleted = await interaction.channel.purge(
+            limit=cantidad
         )
 
         await send_admin_log(
