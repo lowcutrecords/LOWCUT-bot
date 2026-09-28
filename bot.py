@@ -1368,28 +1368,29 @@ async def notificarcontrato(
             "artista asignado.",
             ephemeral=True
         )
-return
 
-artist = str(
-    artist_ids[0]
-).lower().strip()
+        return
 
-print("DEBUG ARTIST:", repr(artist))
-print("DEBUG LACK:", ARTIST_DISCORD_IDS.get("lack"))
+    artist = str(
+        artist_ids[0]
+    ).lower().strip()
 
-if artist not in ARTIST_DISCORD_IDS:
+    print("DEBUG ARTIST:", repr(artist))
+    print("DEBUG LACK:", ARTIST_DISCORD_IDS.get("lack"))
 
-    await interaction.response.send_message(
-        "No tengo configurado "
-        f"Discord para {artist}.",
-        ephemeral=True
-    )
+    if artist not in ARTIST_DISCORD_IDS:
 
-    return
+        await interaction.response.send_message(
+            "No tengo configurado "
+            f"Discord para {artist}.",
+            ephemeral=True
+        )
 
-user_id = ARTIST_DISCORD_IDS[
-    artist
-]
+        return
+
+    user_id = ARTIST_DISCORD_IDS[
+        artist
+    ]
 
     channel = bot.get_channel(
         CONTRACTS_CHANNEL_ID
